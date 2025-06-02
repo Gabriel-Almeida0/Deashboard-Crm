@@ -1,167 +1,314 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Bell, Lock, User, Palette } from "lucide-react";
+import { useNotifications } from "@/hooks/use-notifications";
+import { Breadcrumb } from "@/components/breadcrumb";
 
 export default function ConfiguracoesPage() {
+  const { addNotification } = useNotifications();
+
+  // Estados para formulários
+  const [perfilForm, setPerfilForm] = useState({
+    nome: "Usuário Teste",
+    email: "usuario@teste.com",
+    cargo: "Administrador"
+  });
+
+  const [senhaForm, setSenhaForm] = useState({
+    senhaAtual: "",
+    novaSenha: "",
+    confirmarSenha: ""
+  });
+
+  const [notificacoes, setNotificacoes] = useState({
+    email: true,
+    web: true,
+    vendas: true,
+    suporte: true,
+    sistema: true
+  });
+
+  // Manipuladores de formulário
+  const handlePerfilChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setPerfilForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSenhaChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setSenhaForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleNotificacaoChange = (name: string, checked: boolean) => {
+    setNotificacoes((prev) => ({ ...prev, [name]: checked }));
+  };
+
+  // Manipuladores de envio
+  const handlePerfilSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    addNotification(
+      "Perfil atualizado",
+      "Suas informações de perfil foram atualizadas com sucesso",
+      "success"
+    );
+  };
+
+  const handleSenhaSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (senhaForm.novaSenha !== senhaForm.confirmarSenha) {
+      addNotification(
+        "Erro ao atualizar senha",
+        "As senhas informadas não coincidem",
+        "error"
+      );
+      return;
+    }
+    
+    if (senhaForm.novaSenha.length < 8) {
+      addNotification(
+        "Erro ao atualizar senha",
+        "A senha deve ter pelo menos 8 caracteres",
+        "error"
+      );
+      return;
+    }
+    
+    addNotification(
+      "Senha atualizada",
+      "Sua senha foi atualizada com sucesso",
+      "success"
+    );
+    
+    setSenhaForm({
+      senhaAtual: "",
+      novaSenha: "",
+      confirmarSenha: ""
+    });
+  };
+
+  const handleNotificacoesSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    addNotification(
+      "Preferências atualizadas",
+      "Suas preferências de notificação foram atualizadas",
+      "success"
+    );
+  };
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Configurações</h1>
+    <div className="p-4 md:p-6 space-y-6">
+      <Breadcrumb />
+      
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl md:text-3xl font-bold">Configurações</h1>
       </div>
 
-      <Tabs defaultValue="conta" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="conta" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
-            Conta
-          </TabsTrigger>
-          <TabsTrigger value="notificacoes" className="flex items-center gap-2">
-            <Bell className="h-4 w-4" />
-            Notificações
-          </TabsTrigger>
-          <TabsTrigger value="seguranca" className="flex items-center gap-2">
-            <Lock className="h-4 w-4" />
-            Segurança
-          </TabsTrigger>
-          <TabsTrigger value="aparencia" className="flex items-center gap-2">
-            <Palette className="h-4 w-4" />
-            Aparência
-          </TabsTrigger>
+      <Tabs defaultValue="perfil">
+        <TabsList className="mb-6">
+          <TabsTrigger value="perfil">Perfil</TabsTrigger>
+          <TabsTrigger value="senha">Senha</TabsTrigger>
+          <TabsTrigger value="notificacoes">Notificações</TabsTrigger>
+          <TabsTrigger value="aparencia">Aparência</TabsTrigger>
         </TabsList>
-
-        <TabsContent value="conta">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Preferências da Conta</h3>
-                <p className="text-sm text-muted-foreground">
-                  Gerencie suas preferências de conta e informações pessoais.
-                </p>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Mostrar status online</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Permite que outros usuários vejam quando você está online
-                    </p>
-                  </div>
-                  <Switch />
+        
+        <TabsContent value="perfil">
+          <Card>
+            <CardHeader>
+              <CardTitle>Informações de Perfil</CardTitle>
+              <CardDescription>
+                Atualize suas informações pessoais e profissionais
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handlePerfilSubmit}>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="nome">Nome</Label>
+                  <Input
+                    id="nome"
+                    name="nome"
+                    value={perfilForm.nome}
+                    onChange={handlePerfilChange}
+                  />
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Ativar autenticação em duas etapas</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Adiciona uma camada extra de segurança à sua conta
-                    </p>
-                  </div>
-                  <Switch />
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    name="email"
+                    type="email"
+                    value={perfilForm.email}
+                    onChange={handlePerfilChange}
+                  />
                 </div>
-              </div>
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="cargo">Cargo</Label>
+                  <Input
+                    id="cargo"
+                    name="cargo"
+                    value={perfilForm.cargo}
+                    onChange={handlePerfilChange}
+                  />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button type="submit">Salvar Alterações</Button>
+              </CardFooter>
+            </form>
           </Card>
         </TabsContent>
-
+        
+        <TabsContent value="senha">
+          <Card>
+            <CardHeader>
+              <CardTitle>Alterar Senha</CardTitle>
+              <CardDescription>
+                Atualize sua senha para manter sua conta segura
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleSenhaSubmit}>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="senhaAtual">Senha Atual</Label>
+                  <Input
+                    id="senhaAtual"
+                    name="senhaAtual"
+                    type="password"
+                    value={senhaForm.senhaAtual}
+                    onChange={handleSenhaChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="novaSenha">Nova Senha</Label>
+                  <Input
+                    id="novaSenha"
+                    name="novaSenha"
+                    type="password"
+                    value={senhaForm.novaSenha}
+                    onChange={handleSenhaChange}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmarSenha">Confirmar Nova Senha</Label>
+                  <Input
+                    id="confirmarSenha"
+                    name="confirmarSenha"
+                    type="password"
+                    value={senhaForm.confirmarSenha}
+                    onChange={handleSenhaChange}
+                  />
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button type="submit">Atualizar Senha</Button>
+              </CardFooter>
+            </form>
+          </Card>
+        </TabsContent>
+        
         <TabsContent value="notificacoes">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Configurações de Notificações</h3>
-                <p className="text-sm text-muted-foreground">
-                  Personalize como e quando você recebe notificações.
-                </p>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Notificações por email</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receba atualizações importantes por email
-                    </p>
+          <Card>
+            <CardHeader>
+              <CardTitle>Preferências de Notificação</CardTitle>
+              <CardDescription>
+                Escolha como e quando deseja receber notificações
+              </CardDescription>
+            </CardHeader>
+            <form onSubmit={handleNotificacoesSubmit}>
+              <CardContent className="space-y-4">
+                <div className="space-y-4">
+                  <h3 className="text-sm font-medium">Canais de Notificação</h3>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="emailNotif">Notificações por Email</Label>
+                    <Switch
+                      id="emailNotif"
+                      checked={notificacoes.email}
+                      onCheckedChange={(checked) => handleNotificacaoChange("email", checked)}
+                    />
                   </div>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Notificações push</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receba notificações em tempo real no navegador
-                    </p>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="webNotif">Notificações no Navegador</Label>
+                    <Switch
+                      id="webNotif"
+                      checked={notificacoes.web}
+                      onCheckedChange={(checked) => handleNotificacaoChange("web", checked)}
+                    />
                   </div>
-                  <Switch />
                 </div>
-              </div>
-            </div>
+                
+                <div className="space-y-4 pt-4 border-t">
+                  <h3 className="text-sm font-medium">Tipos de Notificação</h3>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="vendasNotif">Alertas de Vendas</Label>
+                    <Switch
+                      id="vendasNotif"
+                      checked={notificacoes.vendas}
+                      onCheckedChange={(checked) => handleNotificacaoChange("vendas", checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="suporteNotif">Atualizações de Suporte</Label>
+                    <Switch
+                      id="suporteNotif"
+                      checked={notificacoes.suporte}
+                      onCheckedChange={(checked) => handleNotificacaoChange("suporte", checked)}
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="sistemaNotif">Notificações de Sistema</Label>
+                    <Switch
+                      id="sistemaNotif"
+                      checked={notificacoes.sistema}
+                      onCheckedChange={(checked) => handleNotificacaoChange("sistema", checked)}
+                    />
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button type="submit">Salvar Preferências</Button>
+              </CardFooter>
+            </form>
           </Card>
         </TabsContent>
-
-        <TabsContent value="seguranca">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Segurança da Conta</h3>
-                <p className="text-sm text-muted-foreground">
-                  Mantenha sua conta segura com estas configurações.
-                </p>
-              </div>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Verificação em duas etapas</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Adicione uma camada extra de segurança ao seu login
-                    </p>
-                  </div>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Notificações de login</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Receba alertas sobre novos logins em sua conta
-                    </p>
-                  </div>
-                  <Switch />
-                </div>
-              </div>
-            </div>
-          </Card>
-        </TabsContent>
-
+        
         <TabsContent value="aparencia">
-          <Card className="p-6">
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <h3 className="text-lg font-semibold">Personalização</h3>
-                <p className="text-sm text-muted-foreground">
-                  Personalize a aparência do seu dashboard.
-                </p>
-              </div>
+          <Card>
+            <CardHeader>
+              <CardTitle>Aparência</CardTitle>
+              <CardDescription>
+                Personalize a aparência do sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
               <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Modo escuro</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Alterne entre tema claro e escuro
-                    </p>
+                <h3 className="text-sm font-medium">Tema</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="cursor-pointer border-2 border-primary rounded-md overflow-hidden">
+                    <div className="bg-background h-20 flex items-center justify-center">
+                      <span className="text-foreground">Claro</span>
+                    </div>
                   </div>
-                  <Switch />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <Label>Animações</Label>
-                    <p className="text-sm text-muted-foreground">
-                      Ative ou desative animações da interface
-                    </p>
+                  <div className="cursor-pointer border-2 border-gray-200 rounded-md overflow-hidden">
+                    <div className="bg-black h-20 flex items-center justify-center">
+                      <span className="text-white">Escuro</span>
+                    </div>
                   </div>
-                  <Switch />
+                  <div className="cursor-pointer border-2 border-gray-200 rounded-md overflow-hidden">
+                    <div className="bg-gradient-to-b from-background to-black h-20 flex items-center justify-center">
+                      <span className="text-foreground">Sistema</span>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
+            </CardContent>
+            <CardFooter>
+              <Button type="button" variant="outline">Restaurar Padrões</Button>
+            </CardFooter>
           </Card>
         </TabsContent>
       </Tabs>

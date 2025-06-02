@@ -3,6 +3,9 @@
 import { Card } from "@/components/ui/card";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { Breadcrumb } from "@/components/breadcrumb";
+import { LoadingSpinner } from "@/components/loading-spinner";
+import { useEffect, useState } from "react";
 
 const salesData = [
   { month: "Jan", sales: 4000, target: 3000 },
@@ -48,59 +51,91 @@ const recentSales = [
 ];
 
 export default function VendasPage() {
+  const [isClient, setIsClient] = useState(false);
+  
+  // Resolve o problema de hidratação para gráficos
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Vendas & Conversões</h1>
+    <div className="p-4 md:p-6 space-y-6">
+      <Breadcrumb />
+      
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h1 className="text-2xl md:text-3xl font-bold">Vendas & Conversões</h1>
+        <div className="flex gap-2">
+          <select className="bg-background border rounded-md px-3 py-1 text-sm">
+            <option value="este-mes">Este mês</option>
+            <option value="mes-passado">Mês passado</option>
+            <option value="trimestre">Trimestre</option>
+            <option value="ano">Ano</option>
+          </select>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        <Card className="p-6">
+        <Card className="p-4 md:p-6">
           <h3 className="text-lg font-semibold mb-4">Desempenho de Vendas vs Meta</h3>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={salesData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.5} />
-                <XAxis dataKey="month" />
-                <YAxis 
-                  tickFormatter={(value) => `R$ ${value/1000}k`}
-                />
-                <Tooltip 
-                  formatter={(value) => [`${formatCurrency(Number(value))}`, "Vendas"]}
-                  contentStyle={{ backgroundColor: "hsl(var(--background))", borderColor: "hsl(var(--border))" }}
-                  labelStyle={{ color: "hsl(var(--foreground))" }}
-                />
-                <Line type="monotone" dataKey="sales" stroke="hsl(var(--chart-1))" name="Vendas" strokeWidth={2} />
-                <Line type="monotone" dataKey="target" stroke="hsl(var(--chart-2))" strokeDasharray="5 5" name="Meta" strokeWidth={2} />
-              </LineChart>
-            </ResponsiveContainer>
+          <div className="h-[250px] md:h-[300px]">
+            {!isClient ? (
+              <div className="h-full flex items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={salesData}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.5} />
+                  <XAxis dataKey="month" />
+                  <YAxis 
+                    tickFormatter={(value) => `R$ ${value/1000}k`}
+                  />
+                  <Tooltip 
+                    formatter={(value) => [`${formatCurrency(Number(value))}`, "Vendas"]}
+                    contentStyle={{ backgroundColor: "hsl(var(--background))", borderColor: "hsl(var(--border))" }}
+                    labelStyle={{ color: "hsl(var(--foreground))" }}
+                  />
+                  <Line type="monotone" dataKey="sales" stroke="hsl(var(--chart-1))" name="Vendas" strokeWidth={2} />
+                  <Line type="monotone" dataKey="target" stroke="hsl(var(--chart-2))" strokeDasharray="5 5" name="Meta" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </Card>
 
-        <Card className="p-6">
+        <Card className="p-4 md:p-6">
           <h3 className="text-lg font-semibold mb-4">Vendas por Produto</h3>
-          <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={salesByProduct}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.5} />
-                <XAxis dataKey="name" />
-                <YAxis 
-                  tickFormatter={(value) => `R$ ${value/1000}k`}
-                />
-                <Tooltip 
-                  formatter={(value) => [`${formatCurrency(Number(value))}`, "Valor"]}
-                  contentStyle={{ backgroundColor: "hsl(var(--background))", borderColor: "hsl(var(--border))" }}
-                  labelStyle={{ color: "hsl(var(--foreground))" }}
-                />
-                <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="h-[250px] md:h-[300px]">
+            {!isClient ? (
+              <div className="h-full flex items-center justify-center">
+                <LoadingSpinner />
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={salesByProduct}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.5} />
+                  <XAxis dataKey="name" />
+                  <YAxis 
+                    tickFormatter={(value) => `R$ ${value/1000}k`}
+                  />
+                  <Tooltip 
+                    formatter={(value) => [`${formatCurrency(Number(value))}`, "Valor"]}
+                    contentStyle={{ backgroundColor: "hsl(var(--background))", borderColor: "hsl(var(--border))" }}
+                    labelStyle={{ color: "hsl(var(--foreground))" }}
+                  />
+                  <Bar dataKey="value" fill="hsl(var(--chart-1))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </div>
         </Card>
       </div>
 
-      <Card className="p-6">
-        <h3 className="text-lg font-semibold mb-4">Últimas Vendas</h3>
+      <Card className="p-4 md:p-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-semibold">Últimas Vendas</h3>
+          <button className="text-sm text-primary hover:underline">Ver todas</button>
+        </div>
         <div className="relative overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
