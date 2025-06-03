@@ -13,8 +13,14 @@ const nextConfig = {
         hostname: '**',
       },
     ],
+    unoptimized: true,
   },
   compress: true,
+  output: 'export',
+  distDir: 'out',
+  basePath: '/Deashboard-Crm',
+  assetPrefix: '/Deashboard-Crm/',
+  trailingSlash: true,
 };
 
 module.exports = nextConfig;
